@@ -1,0 +1,2 @@
+*.apk filter=lfs diff=lfs merge=lfs -text
+src/test/resources/apk/vkvideo.apk filter=lfs diff=lfs merge=lfs -text
