@@ -4,11 +4,12 @@ import com.codeborne.selenide.ClickOptions;
 import com.codeborne.selenide.SelenideElement;
 import com.larn3x.pages.BasePage;
 import io.appium.java_client.AppiumBy;
+import io.qameta.allure.Step;
 import org.openqa.selenium.support.ui.FluentWait;
 
 import java.time.Duration;
 
-import static com.codeborne.selenide.Condition.appear;
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
 import static com.larn3x.utils.TimeUtils.convertTimeLineToTotalSeconds;
 import static org.assertj.core.api.Assertions.*;
@@ -25,18 +26,20 @@ public class VkVideoPlayerPage extends BasePage {
 
     private final SelenideElement timeCurrentProgress = $(AppiumBy.id("com.vk.vkvideo:id/current_progress"));
 
+    @Step("Проверяем воспроизведение видео, нажимая на экран видеоплеера для фиксирования" +
+            " пройденного времени видео по ползунку прокрутки и таймеру")
     public VkVideoPlayerPage verifyThatOpenedVideoIsRunningMoreThan(int seconds) {
-        if (seconds > 30 || seconds < 10) throw new RuntimeException("Допустимый лимит в секундах: не меньше 10 и не больше 30");
+        if (seconds > 30 || seconds < 10)
+            throw new RuntimeException("Допустимый лимит в секундах: не меньше 10 и не больше 30");
 
         shouldBeVisible(videoPlayer);
+
         try {
             new FluentWait<>(webdriver())
                     .withTimeout(Duration.ofSeconds(seconds))
                     .pollingEvery(Duration.ofMillis(3500))
                     .until(_ -> {
-                        sleep(500L);
-
-                        videoPlayer.click(ClickOptions.withOffset(-200, -40));
+                        videoPlayer.shouldBe(clickable).click(ClickOptions.withOffset(-100, -20));
                         String timeSeekStringValue = timeSeekBar.should(appear).getText();
                         double timeLineValue = Double.parseDouble(timeSeekStringValue);
                         return timeLineValue >= seconds;
@@ -59,14 +62,15 @@ public class VkVideoPlayerPage extends BasePage {
         return this;
     }
 
+    @Step("Проверяем, что видео не воспроизводится, ориентируясь на остановку по кружку загрузки и уведомления")
     public VkVideoPlayerPage verifyThatOpenedVideoIsNotRunning() {
         shouldBeVisible(videoPlayer);
 
         new FluentWait<>(webdriver())
                 .withTimeout(Duration.ofSeconds(15))
-                .pollingEvery(Duration.ofSeconds(5))
+                .pollingEvery(Duration.ofMillis(3500))
                 .until(_ -> {
-                    videoPlayer.hover().click(ClickOptions.withOffset(-200, -40));
+                    videoPlayer.shouldBe(clickable).click(ClickOptions.withOffset(-100, -20));
                     return videoSpinLoader.should(appear);
                 });
 
@@ -81,10 +85,13 @@ public class VkVideoPlayerPage extends BasePage {
         if (input == null || input.isEmpty()) {
             return input;
         }
+
         int slashIndex = input.indexOf('/');
+
         if (slashIndex == -1) {
             return input.trim();
         }
+
         return input.substring(0, slashIndex).trim();
     }
 }

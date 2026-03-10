@@ -8,6 +8,8 @@ import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import static com.codeborne.selenide.WebDriverRunner.getWebDriver;
+import static com.larn3x.utils.NetworkControlUtil.NetworkType.MOBILE_DATA;
+import static com.larn3x.utils.NetworkControlUtil.NetworkType.WIFI;
 
 public class NetworkControlExtension implements BeforeTestExecutionCallback, AfterTestExecutionCallback {
     private Boolean originalWifiState;
@@ -16,11 +18,10 @@ public class NetworkControlExtension implements BeforeTestExecutionCallback, Aft
     @Override
     public void beforeTestExecution(ExtensionContext context) {
         if (shouldDisableInternet(context)) {
-            AndroidDriver driver = (AndroidDriver) getWebDriver();
-            NetworkControlUtil netHelper = new NetworkControlUtil(driver);
+            NetworkControlUtil netHelper = new NetworkControlUtil((AndroidDriver) getWebDriver());
 
-            originalWifiState = netHelper.isWifiEnabled();
-            originalMobileDataState = netHelper.isMobileDataEnabled();
+            originalWifiState = netHelper.isNetworkEnabled(WIFI);
+            originalMobileDataState = netHelper.isNetworkEnabled(MOBILE_DATA);
 
             netHelper.disableInternet();
         }
@@ -29,11 +30,10 @@ public class NetworkControlExtension implements BeforeTestExecutionCallback, Aft
     @Override
     public void afterTestExecution(ExtensionContext context) {
         if (originalWifiState != null && originalMobileDataState != null) {
-            AndroidDriver driver = (AndroidDriver) getWebDriver();
-            NetworkControlUtil netHelper = new NetworkControlUtil(driver);
+            NetworkControlUtil netHelper = new NetworkControlUtil((AndroidDriver) getWebDriver());
 
-            if (originalWifiState) netHelper.setWifiState(true);
-            if (originalMobileDataState) netHelper.setMobileDataState(true);
+            if (originalWifiState) netHelper.setNetworkState(WIFI, true);
+            if (originalMobileDataState) netHelper.setNetworkState(MOBILE_DATA, true);
         }
     }
 
