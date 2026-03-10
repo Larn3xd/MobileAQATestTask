@@ -8,9 +8,11 @@ public class AnnotationUtils {
         if (testClass.isAnnotationPresent(VkVideo.class)) {
             return testClass.getAnnotation(VkVideo.class).value();
         }
+
         if (testClass.isAnnotationPresent(AlchemyPuzzle.class)) {
             return testClass.getAnnotation(AlchemyPuzzle.class).value();
         }
+
         throw new RuntimeException("Тестовый класс должен быть отмечен одной аннотацией приложения, например," +
                 "@VkVideo");
     }

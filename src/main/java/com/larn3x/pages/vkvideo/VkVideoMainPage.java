@@ -4,6 +4,7 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import com.larn3x.pages.BasePage;
 import io.appium.java_client.AppiumBy;
+import io.qameta.allure.Step;
 
 import java.time.Duration;
 import java.util.NoSuchElementException;
@@ -26,8 +27,10 @@ public class VkVideoMainPage extends BasePage {
 
     private final ElementsCollection recommendVideos = $$x("//android.widget.ImageView[@resource-id='com.vk.vkvideo:id/preview']");
 
+    @Step("Закрываем popup уведомления")
     public void handleSignInWidgetIfPresent() {
         loadingPulseBars.forEach(loadingBar -> loadingBar.should(disappear));
+
         try {
             if(onboardWidget.is(visible, Duration.ofSeconds(5))) {
                 click(closeOnboardWidgetButton);
@@ -41,6 +44,7 @@ public class VkVideoMainPage extends BasePage {
         } catch (AssertionError | NoSuchElementException _) {}
     }
 
+    @Step("Открываем рекомендованное видео")
     public VkVideoMainPage openRecommendVideo() {
         SelenideElement video = recommendVideos.get(new Random().nextInt(0, recommendVideos.size() - 1));
         click(video);
