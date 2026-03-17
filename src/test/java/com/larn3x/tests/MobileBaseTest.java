@@ -34,6 +34,8 @@ import static io.qameta.allure.Allure.step;
 @ExtendWith(NetworkControlExtension.class)
 public class MobileBaseTest {
 
+    private static final int DEFAULT_TIMEOUT = 10000;
+
     protected static ThreadLocal<AppiumDriver> driver = new ThreadLocal<>();
     protected MobileConfig mobileConfig;
 
@@ -49,8 +51,8 @@ public class MobileBaseTest {
         BaseConfiguration.init(appName, runType);
         mobileConfig = BaseConfiguration.getMobileConfig();
 
+        Configuration.timeout = DEFAULT_TIMEOUT;
         Configuration.browser = "android";
-        Configuration.timeout = 10000;
         Configuration.reportsFolder = "build/reports/tests";
 
         SelenideLogger.addListener("AllureSelenide", new AllureSelenide()
@@ -88,7 +90,8 @@ public class MobileBaseTest {
         if (appPath.startsWith("/") || appPath.contains(":")) {
             capabilities.setCapability("appium:app", appPath);
         } else {
-            capabilities.setCapability("appium:app", Paths.get("src/test/resources/" + appPath).toAbsolutePath().toString());
+            capabilities.setCapability("appium:app",
+                    Paths.get("src/test/resources/" + appPath).toAbsolutePath().toString());
         }
 
         AndroidDriver createdDriver = new AndroidDriver(new URL(mobileConfig.remoteURL()), capabilities);
@@ -110,23 +113,20 @@ public class MobileBaseTest {
     public void tearDown() {
         try {
             if (WebDriverRunner.hasWebDriverStarted()) {
-                AllureUtils.attachScreenshot("Screenshot attchament");
+                AllureUtils.attachScreenshot("Screenshot attachment");
                 AllureUtils.attachPageSource();
             }
 
-            if (BaseConfiguration.getRunType() == TestRunType.SELENOID && driver != null) {
+            if (BaseConfiguration.getRunType() == TestRunType.SELENOID && getDriver() != null) {
                 String sessionId = getDriver().getSessionId().toString();
                 String videoUrl = String.format("http://localhost:8080/video/%s.mp4", sessionId);
-                Allure.addAttachment("Video", "video/mp4",
+                Allure.addAttachment("Video", "text/plain",
                         new ByteArrayInputStream(videoUrl.getBytes()), "mp4");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (getDriver() != null) {
-                getDriver().quit();
-            }
             step("Очистка конфигурации, закрытие браузера", () -> {
                 BaseConfiguration.clear();
                 closeWebDriver();
